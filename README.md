@@ -1,3 +1,5 @@
+[![C++20 CI](https://github.com/adhinaik13/low-latency-matching-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/adhinaik13/low-latency-matching-engine/actions/workflows/ci.yml)
+
 # Low-Latency Limit Order Book & Matching Engine
 
 A C++20 educational trading-engine project designed around HFT-style order
