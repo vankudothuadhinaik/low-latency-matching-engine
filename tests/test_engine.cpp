@@ -64,6 +64,32 @@ void test_no_cross() {
     assert(e.book().bestAsk() == 10100);
 }
 
+void test_invalid_orders() {
+    MatchingEngine e;
+
+    // Prices use positive fixed-point ticks; reject zero and negative prices.
+    assert(e.submitLimitOrder(1, Side::Buy, 0, 5).empty());
+    assert(e.submitLimitOrder(2, Side::Sell, -100, 5).empty());
+    assert(e.book().order_count() == 0);
+
+    // Direct order-book insertion must enforce the same invariant.
+    OrderBook book;
+    assert(!book.addOrder(3, Side::Buy, 0, 5));
+    assert(!book.addOrder(4, Side::Sell, -1, 5));
+    assert(!book.addOrder(5, Side::Buy, 100, 0));
+    assert(book.order_count() == 0);
+}
+
+void test_duplicate_order_id() {
+    MatchingEngine e;
+    e.submitLimitOrder(7, Side::Buy, 10000, 5);
+    auto trades = e.submitLimitOrder(7, Side::Sell, 10000, 5);
+    assert(trades.empty());
+    assert(e.book().order_count() == 1);
+    assert(e.book().find(7) != nullptr);
+    assert(e.book().find(7)->side == Side::Buy);
+}
+
 void test_cancel() {
     MatchingEngine e;
 
@@ -161,6 +187,8 @@ int main() {
     test_price_time_priority();
     test_no_cross();
     test_cancel();
+    test_invalid_orders();
+    test_duplicate_order_id();
     test_spsc_queue();
     test_spsc_concurrent();
 
