@@ -14,7 +14,7 @@ class OrderBook {
 public:
     explicit OrderBook(std::size_t pool_capacity = 4096);
 
-    // Returns false if the order ID already exists or quantity is zero.
+    // Returns false if the price is non-positive, quantity is zero, or the order ID already exists.
     bool addOrder(OrderId id, Side side, Price price, Quantity quantity);
 
     // Cancels an existing order. Returns false if the ID is unknown.
