@@ -9,7 +9,7 @@ std::vector<Trade> MatchingEngine::submitLimitOrder(OrderId id,
                                                    Side side,
                                                    Price price,
                                                    Quantity quantity) {
-    if (quantity == 0 || book_.find(id) != nullptr) {
+    if (price <= 0 || quantity == 0 || book_.find(id) != nullptr) {
         return {};
     }
 
