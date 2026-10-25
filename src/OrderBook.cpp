@@ -9,7 +9,7 @@ OrderBook::OrderBook(std::size_t pool_capacity)
     : pool_(pool_capacity) {}
 
 bool OrderBook::addOrder(OrderId id, Side side, Price price, Quantity quantity) {
-    if (quantity == 0 || orders_.contains(id)) {
+    if (price <= 0 || quantity == 0 || orders_.contains(id)) {
         return false;
     }
 
