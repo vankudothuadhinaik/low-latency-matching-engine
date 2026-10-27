@@ -29,6 +29,16 @@ if (BUILD_TESTS)
     enable_testing()
     add_executable(engine_tests tests/test_engine.cpp)
     target_link_libraries(engine_tests PRIVATE engine)
+
+    # The tests use assert(), including around operations with side effects.
+    # Keep assertions enabled even in Release builds, where CMake normally
+    # defines NDEBUG and would otherwise compile those checks away.
+    if (MSVC)
+        target_compile_options(engine_tests PRIVATE /UNDEBUG)
+    else()
+        target_compile_options(engine_tests PRIVATE -UNDEBUG)
+    endif()
+
     add_test(NAME engine_tests COMMAND engine_tests)
 endif()
 
@@ -36,9 +46,8 @@ if (BUILD_BENCHMARKS)
     add_executable(engine_benchmark benchmarks/benchmark.cpp)
     target_link_libraries(engine_benchmark PRIVATE engine)
 
-add_executable(event_simulator
-    src/event_simulator.cpp
-)
-
-target_link_libraries(event_simulator PRIVATE engine)
+    add_executable(event_simulator
+        src/event_simulator.cpp
+    )
+    target_link_libraries(event_simulator PRIVATE engine)
 endif()
