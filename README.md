@@ -76,6 +76,8 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
+The test target keeps assertions enabled even in Release builds, so the `assert()` checks are not compiled out by `NDEBUG`. GitHub Actions runs the Release suite and a separate Debug suite under AddressSanitizer and UndefinedBehaviorSanitizer; see the [CI run history](https://github.com/vankudothuadhinaik/low-latency-matching-engine/actions).
+
 The test suite covers matching behavior, partial fills, cancellation,
 order-book operations, the SPSC queue, and concurrent producer/consumer
 correctness.
@@ -153,7 +155,9 @@ and deallocation during order processing.
 
 The event pipeline uses a bounded single-producer/single-consumer ring
 buffer implemented with atomic head and tail indices. The queue avoids mutexes
-and dynamic allocation in its push/pop operations.
+and dynamic allocation in its push/pop operations. One slot distinguishes full
+from empty, so a declared storage capacity of `N` provides `N - 1` usable items;
+capacities below two are rejected at compile time.
 
 ### Important limitation
 
