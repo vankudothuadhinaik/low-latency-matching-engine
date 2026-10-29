@@ -210,9 +210,11 @@ int main(int argc, char* argv[]) {
         sorted_throughputs.begin(),
         sorted_throughputs.end());
 
+    const std::size_t middle = sorted_throughputs.size() / 2;
     const double median_throughput =
-        sorted_throughputs[
-            sorted_throughputs.size() / 2];
+        sorted_throughputs.size() % 2 == 0
+            ? (sorted_throughputs[middle - 1] + sorted_throughputs[middle]) / 2.0
+            : sorted_throughputs[middle];
 
     double squared_diff_sum = 0.0;
 
