@@ -4,6 +4,7 @@
 #include <atomic>
 #include <cassert>
 #include <iostream>
+#include <limits>
 #include <thread>
 
 using namespace hft;
@@ -195,12 +196,47 @@ void test_spsc_concurrent() {
     assert(queue.empty());
 }
 
+
+void test_cancel_partial_order_and_price_level_cleanup() {
+    MatchingEngine e;
+    e.submitLimitOrder(1, Side::Sell, 10000, 5);
+    auto partial = e.submitLimitOrder(2, Side::Buy, 10000, 2);
+    assert(partial.size() == 1);
+    assert(partial[0].quantity == 2);
+    assert(e.book().find(1) != nullptr);
+    assert(e.book().find(1)->remaining == 3);
+
+    assert(e.cancel(1));
+    assert(e.book().find(1) == nullptr);
+    assert(e.book().order_count() == 0);
+    assert(e.book().bestAsk() == std::numeric_limits<Price>::max());
+    assert(!e.cancel(1));
+}
+
+void test_cancel_middle_order_preserves_fifo() {
+    MatchingEngine e;
+    e.submitLimitOrder(10, Side::Sell, 10000, 2);
+    e.submitLimitOrder(11, Side::Sell, 10000, 3);
+    e.submitLimitOrder(12, Side::Sell, 10000, 4);
+    assert(e.cancel(11));
+
+    auto trades = e.submitLimitOrder(13, Side::Buy, 10000, 6);
+    assert(trades.size() == 2);
+    assert(trades[0].resting_order_id == 10);
+    assert(trades[0].quantity == 2);
+    assert(trades[1].resting_order_id == 12);
+    assert(trades[1].quantity == 4);
+    assert(e.book().order_count() == 0);
+}
+
 int main() {
     test_full_match();
     test_partial_match();
     test_price_time_priority();
     test_no_cross();
     test_cancel();
+    test_cancel_partial_order_and_price_level_cleanup();
+    test_cancel_middle_order_preserves_fifo();
     test_price_time_priority_after_cancel();
     test_invalid_orders();
     test_duplicate_order_id();
