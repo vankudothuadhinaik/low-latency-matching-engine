@@ -229,12 +229,34 @@ void test_cancel_middle_order_preserves_fifo() {
     assert(e.book().order_count() == 0);
 }
 
+void test_cancel_many_orders_and_preserve_fifo() {
+    MatchingEngine e(32);
+    constexpr OrderId count = 1000;
+    for (OrderId id = 1; id <= count; ++id) {
+        assert(e.submitLimitOrder(id, Side::Sell, 10000, 1).empty());
+    }
+    for (OrderId id = 2; id <= count; id += 2) {
+        assert(e.cancel(id));
+        assert(!e.cancel(id));
+    }
+    assert(e.book().order_count() == count / 2);
+
+    auto trades = e.submitLimitOrder(count + 1, Side::Buy, 10000, count / 2);
+    assert(trades.size() == count / 2);
+    for (std::size_t i = 0; i < trades.size(); ++i) {
+        assert(trades[i].resting_order_id == static_cast<OrderId>(2 * i + 1));
+        assert(trades[i].quantity == 1);
+    }
+    assert(e.book().order_count() == 0);
+}
+
 int main() {
     test_full_match();
     test_partial_match();
     test_price_time_priority();
     test_no_cross();
     test_cancel();
+    test_cancel_many_orders_and_preserve_fifo();
     test_cancel_partial_order_and_price_level_cleanup();
     test_cancel_middle_order_preserves_fifo();
     test_price_time_priority_after_cancel();

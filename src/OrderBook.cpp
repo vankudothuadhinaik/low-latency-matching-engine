@@ -17,9 +17,13 @@ bool OrderBook::addOrder(OrderId id, Side side, Price price, Quantity quantity) 
     orders_.emplace(id, order);
 
     if (side == Side::Buy) {
-        bids_[price].push_back(order);
+        auto& queue = bids_[price];
+        queue.push_back(order);
+        queue_positions_.emplace(id, std::prev(queue.end()));
     } else {
-        asks_[price].push_back(order);
+        auto& queue = asks_[price];
+        queue.push_back(order);
+        queue_positions_.emplace(id, std::prev(queue.end()));
     }
 
     return true;
@@ -49,33 +53,26 @@ void OrderBook::removeEmptyLevel(Side side, Price price) {
 }
 
 void OrderBook::eraseFromLevel(Side side, Price price, Order* order) {
-    if (side == Side::Buy) {
-        auto it = bids_.find(price);
-        if (it == bids_.end()) {
-            return;
-        }
-
-        auto& queue = it->second;
-        auto qit = std::find(queue.begin(), queue.end(), order);
-        if (qit != queue.end()) {
-            queue.erase(qit);
-        }
-
-        removeEmptyLevel(side, price);
-    } else {
-        auto it = asks_.find(price);
-        if (it == asks_.end()) {
-            return;
-        }
-
-        auto& queue = it->second;
-        auto qit = std::find(queue.begin(), queue.end(), order);
-        if (qit != queue.end()) {
-            queue.erase(qit);
-        }
-
-        removeEmptyLevel(side, price);
+    const auto position = queue_positions_.find(order->id);
+    if (position == queue_positions_.end()) {
+        return;
     }
+
+    if (side == Side::Buy) {
+        auto level = bids_.find(price);
+        if (level != bids_.end()) {
+            level->second.erase(position->second);
+            removeEmptyLevel(side, price);
+        }
+    } else {
+        auto level = asks_.find(price);
+        if (level != asks_.end()) {
+            level->second.erase(position->second);
+            removeEmptyLevel(side, price);
+        }
+    }
+
+    queue_positions_.erase(position);
 }
 
 bool OrderBook::cancelOrder(OrderId id) {
@@ -125,8 +122,9 @@ std::vector<Trade> OrderBook::match(OrderId incoming_id,
 
                 if (resting->remaining == 0) {
                     orders_.erase(resting->id);
+                    queue_positions_.erase(resting->id);
                     pool_.release(resting);
-                    queue.erase(queue.begin());
+                    queue.pop_front();
                 }
             }
 

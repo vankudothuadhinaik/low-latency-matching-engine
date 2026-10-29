@@ -39,3 +39,40 @@ jobs:
         run: cmake --build build-sanitizers --parallel 2
       - name: Test
         run: ctest --test-dir build-sanitizers --output-on-failure
+
+  benchmark-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Record runner and compiler metadata
+        run: |
+          {
+            echo "Commit: $(git rev-parse HEAD)"
+            echo "OS: $(uname -a)"
+            echo "Compiler:"
+            g++ --version
+            echo "CPU:"
+            lscpu
+            echo "Build type: Release"
+            echo "Command: engine_benchmark 200000 3 100 <workload>"
+          } > benchmark-results.txt
+      - name: Build release benchmark
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF -DBUILD_BENCHMARKS=ON
+          cmake --build build --target engine_benchmark --parallel 2
+      - name: Run reproducible workload suite
+        run: |
+          set -o pipefail
+          for workload in mixed marketable non-crossing skewed-price cancellation-heavy; do
+            echo "" | tee -a benchmark-results.txt
+            echo "===== workload: ${workload} =====" | tee -a benchmark-results.txt
+            ./build/engine_benchmark 200000 3 100 "${workload}" 2>&1 | tee -a benchmark-results.txt
+          done
+      - name: Upload benchmark evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: matching-engine-benchmark-${{ github.sha }}
+          path: benchmark-results.txt
+          if-no-files-found: error
+          retention-days: 30

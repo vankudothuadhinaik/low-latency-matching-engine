@@ -38,3 +38,10 @@ The benchmark supports five deterministic workload profiles: `mixed` (random sid
 ### Skewed-price workload
 
 Use `engine_benchmark 1000000 5 100 skewed-price` to stress an asymmetric price distribution: buy prices are concentrated near 10000 while sell prices are spread across a wider upper range. This is a synthetic workload for comparative testing, not a claim about production order flow.
+
+
+## Automated benchmark evidence
+
+Every push and pull request also runs a dedicated Release benchmark job on a GitHub-hosted Ubuntu runner. It executes all five workloads with 200,000 measured submissions, three throughput runs per workload, and a 1-in-100 sampled latency interval. The job uploads `benchmark-results.txt` with the commit SHA, runner OS/CPU details, compiler version, commands, and raw output as a 30-day workflow artifact.
+
+These numbers are useful for reproducible comparisons on that runner class, not as a guarantee of performance on another machine. Compare artifacts only when compiler, workload, run count, order count, and sampling interval match. For a local hardware claim, run the same commands on the target system and record its metadata.
