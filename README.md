@@ -157,7 +157,7 @@ and dynamic allocation in its push/pop operations.
 
 ### Important limitation
 
-This is a learning project, not production exchange infrastructure.It does
+This is a learning project, not production exchange infrastructure. It does
 not implement production-grade networking, persistence, risk controls,
 sequence recovery, market-data protocols, hardware timestamping, NUMA
 placement, or kernel bypass.
