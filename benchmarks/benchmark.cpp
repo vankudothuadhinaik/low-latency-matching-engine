@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
                 10000 + price_offset(rng);
 
             if (run == RUNS &&
-                i % SAMPLE_INTERVAL == 0) {
+                (i - WARMUP - 1) % SAMPLE_INTERVAL == 0) {
 
                 const auto start = clock::now();
 
@@ -240,14 +240,17 @@ int main(int argc, char* argv[]) {
 
     const auto percentile =
         [&](double p) -> std::uint64_t {
+            if (final_latencies.empty()) {
+                return 0;
+            }
+
+            const double bounded_p = std::clamp(p, 0.0, 1.0);
             const std::size_t index =
                 static_cast<std::size_t>(
-                    p * final_latencies.size());
+                    std::ceil(bounded_p * final_latencies.size())) - 1;
 
             return final_latencies[
-                std::min(
-                    index,
-                    final_latencies.size() - 1)];
+                std::min(index, final_latencies.size() - 1)];
         };
 
     std::cout << "\nConfiguration:\n";

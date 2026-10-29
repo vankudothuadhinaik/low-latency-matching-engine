@@ -93,6 +93,8 @@ correctness.
 This benchmark measures aggregate order-processing throughput for the matching
 engine.
 
+It also samples per-order latency at the configured interval and reports nearest-rank percentiles from the final run. Sampling starts with the first measured order; if a run contains no samples, latency percentile fields are reported as zero rather than indexing an empty collection. Percentiles describe sampled calls only and should not be compared across machines without recording compiler, build mode, CPU, and workload settings.
+
 ### Event pipeline benchmark
 
 ```bash
