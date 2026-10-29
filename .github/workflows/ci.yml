@@ -17,6 +17,8 @@ jobs:
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=ON
       - name: Build
         run: cmake --build build --parallel 2
+      - name: Smoke test cancellation-heavy benchmark
+        run: ./build/engine_benchmark 20000 1 100 cancellation-heavy
       - name: Test
         run: ctest --test-dir build --output-on-failure
 
