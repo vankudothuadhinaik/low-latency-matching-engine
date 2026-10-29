@@ -57,7 +57,7 @@ Requirements:
 - CMake 3.16+
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/vankudothuadhinaik/low-latency-matching-engine.git
 cd low-latency-matching-engine
 
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -125,6 +125,21 @@ operating system, background load, and machine configuration. The throughput
 figure is an aggregate pipeline measurement, not a per-order latency
 distribution or a p50/p95/p99 latency measurement.
 
+## Benchmark evidence and interpretation
+
+The CI workflow runs several workload shapes, including mixed, marketable,
+non-crossing, skewed-price, and cancellation-heavy traffic. It records raw
+outputs and runner/compiler metadata as workflow artifacts so results can be
+inspected rather than relying on a single headline number. See the detailed
+[benchmark methodology and interpretation guide](docs/BENCHMARKING.md) and
+[workflow artifacts](https://github.com/vankudothuadhinaik/low-latency-matching-engine/actions).
+
+CI throughput numbers are measurements from a shared GitHub-hosted runner,
+not guaranteed performance on another machine. Workloads with high run-to-run
+variation should be treated as directional evidence, not a stable performance
+claim. Compare results only with the same build mode, workload, compiler, and
+machine context.
+
 ## Design notes
 
 ### Price-time priority
@@ -146,7 +161,11 @@ This avoids floating-point comparison issues in matching logic.
 ### Order lookup
 
 The order book maintains an `unordered_map<OrderId, Order*>` so that order
-IDs can be located without scanning every price level.
+IDs can be located without scanning every price level. Resting orders also have
+an indexed queue position, allowing cancellation to remove an order from its
+price-level FIFO list without scanning that entire queue. The index is updated
+when orders are cancelled or fully filled; tests exercise cancellation and FIFO
+behavior across a 1,000-order workload.
 
 ### Object pool
 
