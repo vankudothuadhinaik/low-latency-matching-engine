@@ -7,7 +7,7 @@
 
 template <typename T, std::size_t Capacity>
 class SPSCQueue {
-    static_assert(Capacity > 0, "Capacity must be greater than zero");
+    static_assert(Capacity >= 2, "Capacity must be at least two (one slot is reserved to distinguish full from empty)");
 
 public:
     SPSCQueue() = default;
