@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <iostream>
 #include <random>
+#include <string>
 #include <vector>
 
 int main(int argc, char* argv[]) {
@@ -29,6 +30,14 @@ int main(int argc, char* argv[]) {
         argc > 3
             ? std::stoull(argv[3])
             : DEFAULT_SAMPLE_INTERVAL;
+
+    const std::string workload = argc > 4 ? argv[4] : "mixed";
+    if (workload != "mixed" &&
+        workload != "marketable" &&
+        workload != "non-crossing") {
+        std::cerr << "Workload must be mixed, marketable, or non-crossing\n";
+        return 1;
+    }
 
     if (N == 0 || RUNS <= 0 || SAMPLE_INTERVAL == 0) {
         std::cerr
@@ -97,13 +106,15 @@ int main(int argc, char* argv[]) {
 
         // Warm-up.
         for (std::uint64_t i = 1; i <= WARMUP; ++i) {
-            const Side side =
-                side_dist(rng) == 0
-                    ? Side::Buy
-                    : Side::Sell;
+            const Side side = workload == "mixed"
+                ? (side_dist(rng) == 0 ? Side::Buy : Side::Sell)
+                : ((i % 2 == 0) ? Side::Buy : Side::Sell);
 
-            const Price price =
-                10000 + price_offset(rng);
+            const Price price = workload == "marketable"
+                ? 10000
+                : (workload == "non-crossing"
+                    ? (side == Side::Buy ? 9000 : 11000)
+                    : 10000 + price_offset(rng));
 
             engine.submitLimitOrder(
                 i, side, price, 1);
@@ -122,13 +133,15 @@ int main(int argc, char* argv[]) {
              i <= N + WARMUP;
              ++i) {
 
-            const Side side =
-                side_dist(rng) == 0
-                    ? Side::Buy
-                    : Side::Sell;
+            const Side side = workload == "mixed"
+                ? (side_dist(rng) == 0 ? Side::Buy : Side::Sell)
+                : ((i % 2 == 0) ? Side::Buy : Side::Sell);
 
-            const Price price =
-                10000 + price_offset(rng);
+            const Price price = workload == "marketable"
+                ? 10000
+                : (workload == "non-crossing"
+                    ? (side == Side::Buy ? 9000 : 11000)
+                    : 10000 + price_offset(rng));
 
             if (run == RUNS &&
                 (i - WARMUP - 1) % SAMPLE_INTERVAL == 0) {
@@ -262,6 +275,8 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Runs: "
               << RUNS << '\n';
+
+    std::cout << "Workload: " << workload << '\n';
 
     std::cout << "Sampling interval: 1/"
               << SAMPLE_INTERVAL

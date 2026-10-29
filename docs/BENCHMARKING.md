@@ -7,7 +7,9 @@ This repository's benchmark is a microbenchmark, not an exchange-grade performan
 Build the `engine_benchmark` target using the repository's CMake instructions, then run:
 
 ```bash
-./engine_benchmark 1000000 5 100
+./engine_benchmark 1000000 5 100 mixed
+./engine_benchmark 1000000 5 100 marketable
+./engine_benchmark 1000000 5 100 non-crossing
 ```
 
 Arguments are measured order count, number of throughput runs, and latency sampling interval. Defaults are one million measured orders, five runs, and one latency sample per 100 orders. The benchmark warms up the engine before timing and uses a deterministic random seed for each run.
@@ -29,4 +31,4 @@ Arguments are measured order count, number of throughput runs, and latency sampl
 5. Treat latency percentiles as sampled estimates and report the sample count.
 6. Do not describe these numbers as production exchange performance without independent profiling and a realistic workload.
 
-The benchmark currently uses one mixed limit-order workload. Separate marketable, non-crossing, cancellation-heavy, and skewed-price workloads would improve coverage before making broad performance claims.
+The benchmark supports three deterministic workload profiles: `mixed` (random sides and prices), `marketable` (alternating sides at one price, exercising immediate matching), and `non-crossing` (alternating sides at separated prices, growing the resting book). These profiles cover different engine paths but are not a complete market workload suite; cancellation-heavy and skewed-price profiles remain useful follow-ups.
