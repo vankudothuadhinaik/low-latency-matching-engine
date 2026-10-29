@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
 
             const Price price = workload == "marketable"
                 ? 10000
-                : (workload == "non-crossing"
+                : ((workload == "non-crossing" || workload == "cancellation-heavy")
                     ? (side == Side::Buy ? 9000 : 11000)
                     : (workload == "skewed-price"
                         ? (side == Side::Buy
