@@ -4,6 +4,7 @@
 #include "OrderPool.hpp"
 
 #include <cstddef>
+#include <list>
 #include <map>
 #include <unordered_map>
 #include <vector>
@@ -36,7 +37,7 @@ public:
     Price bestAsk() const;
 
 private:
-    using Queue = std::vector<Order*>;
+    using Queue = std::list<Order*>;
     using BidBook = std::map<Price, Queue, std::greater<Price>>;
     using AskBook = std::map<Price, Queue, std::less<Price>>;
 
@@ -47,6 +48,7 @@ private:
     BidBook bids_;
     AskBook asks_;
     std::unordered_map<OrderId, Order*> orders_;
+    std::unordered_map<OrderId, Queue::iterator> queue_positions_;
     OrderPool pool_;
     std::uint64_t next_sequence_{1};
 };
