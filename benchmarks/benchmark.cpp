@@ -34,8 +34,9 @@ int main(int argc, char* argv[]) {
     const std::string workload = argc > 4 ? argv[4] : "mixed";
     if (workload != "mixed" &&
         workload != "marketable" &&
-        workload != "non-crossing") {
-        std::cerr << "Workload must be mixed, marketable, or non-crossing\n";
+        workload != "non-crossing" &&
+        workload != "skewed-price") {
+        std::cerr << "Workload must be mixed, marketable, non-crossing, or skewed-price\n";
         return 1;
     }
 
@@ -114,7 +115,11 @@ int main(int argc, char* argv[]) {
                 ? 10000
                 : (workload == "non-crossing"
                     ? (side == Side::Buy ? 9000 : 11000)
-                    : 10000 + price_offset(rng));
+                    : (workload == "skewed-price"
+                        ? (side == Side::Buy
+                            ? 10000 + static_cast<Price>(rng() % 3)
+                            : 10000 + static_cast<Price>(rng() % 41))
+                        : 10000 + price_offset(rng)));
 
             engine.submitLimitOrder(
                 i, side, price, 1);
@@ -141,7 +146,11 @@ int main(int argc, char* argv[]) {
                 ? 10000
                 : (workload == "non-crossing"
                     ? (side == Side::Buy ? 9000 : 11000)
-                    : 10000 + price_offset(rng));
+                    : (workload == "skewed-price"
+                        ? (side == Side::Buy
+                            ? 10000 + static_cast<Price>(rng() % 3)
+                            : 10000 + static_cast<Price>(rng() % 41))
+                        : 10000 + price_offset(rng)));
 
             if (run == RUNS &&
                 (i - WARMUP - 1) % SAMPLE_INTERVAL == 0) {
