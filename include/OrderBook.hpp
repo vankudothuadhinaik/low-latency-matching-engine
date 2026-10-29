@@ -48,6 +48,7 @@ private:
     BidBook bids_;
     AskBook asks_;
     std::unordered_map<OrderId, Order*> orders_;
+    std::unordered_map<OrderId, Queue::iterator> queue_positions_;
     OrderPool pool_;
     std::uint64_t next_sequence_{1};
 };
