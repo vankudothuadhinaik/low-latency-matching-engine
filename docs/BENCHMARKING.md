@@ -32,3 +32,8 @@ Arguments are measured order count, number of throughput runs, and latency sampl
 6. Do not describe these numbers as production exchange performance without independent profiling and a realistic workload.
 
 The benchmark supports three deterministic workload profiles: `mixed` (random sides and prices), `marketable` (alternating sides at one price, exercising immediate matching), and `non-crossing` (alternating sides at separated prices, growing the resting book). These profiles cover different engine paths but are not a complete market workload suite; cancellation-heavy and skewed-price profiles remain useful follow-ups.
+
+
+### Skewed-price workload
+
+Use `engine_benchmark 1000000 5 100 skewed-price` to stress an asymmetric price distribution: buy prices are concentrated near 10000 while sell prices are spread across a wider upper range. This is a synthetic workload for comparative testing, not a claim about production order flow.
