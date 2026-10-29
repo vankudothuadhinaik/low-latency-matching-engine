@@ -29,6 +29,13 @@ if (BUILD_TESTS)
     enable_testing()
     add_executable(engine_tests tests/test_engine.cpp)
     target_link_libraries(engine_tests PRIVATE engine)
+    # CMake Release builds define NDEBUG, which disables assert()-based test checks.
+    # Explicitly undefine it for the test executable so CI actually evaluates assertions.
+    if (MSVC)
+        target_compile_options(engine_tests PRIVATE /UNDEBUG)
+    else()
+        target_compile_options(engine_tests PRIVATE -UNDEBUG)
+    endif()
     add_test(NAME engine_tests COMMAND engine_tests)
 endif()
 
