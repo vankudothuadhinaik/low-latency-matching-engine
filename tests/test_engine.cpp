@@ -90,6 +90,20 @@ void test_duplicate_order_id() {
     assert(e.book().find(7)->side == Side::Buy);
 }
 
+void test_price_time_priority_after_cancel() {
+    MatchingEngine e;
+    e.submitLimitOrder(1, Side::Sell, 10000, 2);
+    e.submitLimitOrder(2, Side::Sell, 10000, 3);
+    assert(e.cancel(1));
+
+    auto trades = e.submitLimitOrder(3, Side::Buy, 10000, 3);
+    assert(trades.size() == 1);
+    assert(trades[0].resting_order_id == 2);
+    assert(trades[0].quantity == 3);
+    assert(e.book().find(1) == nullptr);
+    assert(e.book().find(2) == nullptr);
+}
+
 void test_cancel() {
     MatchingEngine e;
 
@@ -187,6 +201,7 @@ int main() {
     test_price_time_priority();
     test_no_cross();
     test_cancel();
+    test_price_time_priority_after_cancel();
     test_invalid_orders();
     test_duplicate_order_id();
     test_spsc_queue();
