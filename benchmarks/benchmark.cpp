@@ -35,8 +35,8 @@ int main(int argc, char* argv[]) {
     if (workload != "mixed" &&
         workload != "marketable" &&
         workload != "non-crossing" &&
-        workload != "skewed-price") {
-        std::cerr << "Workload must be mixed, marketable, non-crossing, or skewed-price\n";
+        workload != "skewed-price" && workload != "cancellation-heavy") {
+        std::cerr << "Workload must be mixed, marketable, non-crossing, skewed-price, or cancellation-heavy\n";
         return 1;
     }
 
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
 
             const Price price = workload == "marketable"
                 ? 10000
-                : (workload == "non-crossing"
+                : ((workload == "non-crossing" || workload == "cancellation-heavy")
                     ? (side == Side::Buy ? 9000 : 11000)
                     : (workload == "skewed-price"
                         ? (side == Side::Buy
@@ -121,8 +121,10 @@ int main(int argc, char* argv[]) {
                             : 10000 + static_cast<Price>(rng() % 41))
                         : 10000 + price_offset(rng)));
 
-            engine.submitLimitOrder(
-                i, side, price, 1);
+            engine.submitLimitOrder(i, side, price, 1);
+            if (workload == "cancellation-heavy" && i > 1 && i % 2 == 0) {
+                engine.cancel(i - 1);
+            }
         }
 
         std::vector<std::uint64_t> latencies;
@@ -157,8 +159,10 @@ int main(int argc, char* argv[]) {
 
                 const auto start = clock::now();
 
-                engine.submitLimitOrder(
-                    i, side, price, 1);
+                engine.submitLimitOrder(i, side, price, 1);
+                if (workload == "cancellation-heavy" && i > WARMUP + 1 && i % 2 == 0) {
+                    engine.cancel(i - 1);
+                }
 
                 const auto end = clock::now();
 
@@ -172,8 +176,10 @@ int main(int argc, char* argv[]) {
                     static_cast<std::uint64_t>(latency));
 
             } else {
-                engine.submitLimitOrder(
-                    i, side, price, 1);
+                engine.submitLimitOrder(i, side, price, 1);
+                if (workload == "cancellation-heavy" && i > WARMUP + 1 && i % 2 == 0) {
+                    engine.cancel(i - 1);
+                }
             }
         }
 
