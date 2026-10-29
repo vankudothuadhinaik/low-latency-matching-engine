@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     if (workload != "mixed" &&
         workload != "marketable" &&
         workload != "non-crossing") {
-        std::cerr << "Workload must be mixed, marketable, or non-crossing\\n";
+        std::cerr << "Workload must be mixed, marketable, or non-crossing\n";
         return 1;
     }
 
