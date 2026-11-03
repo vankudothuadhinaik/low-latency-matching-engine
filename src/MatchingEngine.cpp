@@ -13,6 +13,13 @@ std::vector<Trade> MatchingEngine::submitLimitOrder(OrderId id,
         return {};
     }
 
+    // Order IDs are idempotency keys for the lifetime of this engine. Keep the
+    // accepted ID after a full fill so replaying a completed order cannot trade
+    // again merely because it is no longer present in the resting book.
+    if (!seen_order_ids_.insert(id).second) {
+        return {};
+    }
+
     // Match first. If the order has residual quantity, add the remainder
     // as a resting order while preserving a single sequence number.
     auto trades = book_.match(id, side, price, quantity);
