@@ -161,7 +161,9 @@ This avoids floating-point comparison issues in matching logic.
 ### Order lookup
 
 The order book maintains an `unordered_map<OrderId, Order*>` so that order
-IDs can be located without scanning every price level. Resting orders also have
+IDs can be located without scanning every price level. The matching engine also
+remembers every accepted order ID for its lifetime, so a fully filled or cancelled
+order ID cannot be replayed to execute a second time. Resting orders also have
 an indexed queue position, allowing cancellation to remove an order from its
 price-level FIFO list without scanning that entire queue. The index is updated
 when orders are cancelled or fully filled; tests exercise cancellation and FIFO

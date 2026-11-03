@@ -91,6 +91,25 @@ void test_duplicate_order_id() {
     assert(e.book().find(7)->side == Side::Buy);
 }
 
+void test_fully_filled_order_id_cannot_be_reused() {
+    MatchingEngine e;
+
+    assert(e.submitLimitOrder(1, Side::Sell, 10000, 5).empty());
+    auto first = e.submitLimitOrder(2, Side::Buy, 10000, 5);
+    assert(first.size() == 1);
+    assert(first[0].aggressive_order_id == 2);
+    assert(first[0].resting_order_id == 1);
+    assert(e.book().find(2) == nullptr);
+
+    // A later resting order must not be consumed by replaying the completed ID.
+    assert(e.submitLimitOrder(3, Side::Sell, 10000, 7).empty());
+    auto replay = e.submitLimitOrder(2, Side::Buy, 10000, 7);
+    assert(replay.empty());
+    assert(e.book().find(3) != nullptr);
+    assert(e.book().find(3)->remaining == 7);
+    assert(e.book().order_count() == 1);
+}
+
 void test_price_time_priority_after_cancel() {
     MatchingEngine e;
     e.submitLimitOrder(1, Side::Sell, 10000, 2);

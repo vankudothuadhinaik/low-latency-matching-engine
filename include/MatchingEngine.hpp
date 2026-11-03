@@ -2,6 +2,7 @@
 
 #include "OrderBook.hpp"
 
+#include <unordered_set>
 #include <vector>
 
 namespace hft {
@@ -23,6 +24,8 @@ public:
 
 private:
     OrderBook book_;
+    // An accepted order ID is never reusable, even after the order is fully filled.
+    std::unordered_set<OrderId> seen_order_ids_;
 };
 
 } // namespace hft
