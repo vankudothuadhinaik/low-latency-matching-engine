@@ -21,6 +21,20 @@ matching, deterministic execution, concurrency, and low-latency systems concepts
 - Multi-run throughput benchmark
 - CMake build
 
+## Toolchain
+
+| Area | Tools |
+|---|---|
+| Language | C++20 |
+| Build system | CMake 3.16+ |
+| Compiler | C++20-compatible GCC or Clang |
+| Concurrency | Bounded single-producer/single-consumer (SPSC) queue |
+| Correctness checks | Unit tests, Debug build, AddressSanitizer, UndefinedBehaviorSanitizer |
+| Performance analysis | Multi-run engine and event-pipeline benchmarks |
+| Automation | GitHub Actions |
+
+The matching core is intentionally single-threaded; the event producer/consumer boundary is where the bounded SPSC queue is used. Benchmark figures are workload- and machine-dependent and should always be read alongside the documented compiler, build mode, and runner context.
+
 ## Architecture
 
 ```text
